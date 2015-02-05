@@ -19,7 +19,7 @@
  */
 
 #include <linux/version.h>
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,12,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0)
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -53,6 +53,7 @@
 #include <net/net_namespace.h>
 #include <net/netns/generic.h>
 #include <net/vxlan.h>
+#include <net/nsh.h>
 
 #include "compat.h"
 #include "datapath.h"
@@ -60,6 +61,9 @@
 #include "vlan.h"
 
 #define VXLAN_HLEN (sizeof(struct udphdr) + sizeof(struct vxlanhdr))
+#define NSH_HLEN (sizeof(struct udphdr) + \
+		  sizeof(struct vxlanhdr) + \
+		  sizeof(struct nshhdr))
 
 #define VXLAN_FLAGS 0x08000000	/* struct vxlanhdr.vx_flags required value. */
 
@@ -69,18 +73,35 @@ struct vxlanhdr {
 	__be32 vx_vni;
 };
 
+static inline struct vxlanhdr *vxlan_hdr(const struct sk_buff *skb)
+{
+	return (struct vxlanhdr *)(udp_hdr(skb) + 1);
+}
+
+static inline struct nshhdr *nsh_hdr(const struct sk_buff *skb)
+{
+	return (struct nshhdr *)(vxlan_hdr(skb) + 1);
+}
+
 /* Callback from net/ipv4/udp.c to receive packets */
 static int vxlan_udp_encap_recv(struct sock *sk, struct sk_buff *skb)
 {
 	struct vxlan_sock *vs;
 	struct vxlanhdr *vxh;
+	struct udphdr *udp;
+	bool isnsh = false;
+	__be32 nsp = 0;
+
+	udp = (struct udphdr *)udp_hdr(skb);
+	if (udp->dest == htons(NSH_DST_PORT))
+		isnsh = true;
 
 	/* Need Vxlan and inner Ethernet header to be present */
-	if (!pskb_may_pull(skb, VXLAN_HLEN))
+	if (!pskb_may_pull(skb, isnsh ? NSH_HLEN : VXLAN_HLEN))
 		goto error;
 
 	/* Return packets with reserved bits set */
-	vxh = (struct vxlanhdr *)(udp_hdr(skb) + 1);
+	vxh = vxlan_hdr(skb);
 	if (vxh->vx_flags != htonl(VXLAN_FLAGS) ||
 	    (vxh->vx_vni & htonl(0xff))) {
 		pr_warn("invalid vxlan flags=%#x vni=%#x\n",
@@ -88,14 +109,28 @@ static int vxlan_udp_encap_recv(struct sock *sk, struct sk_buff *skb)
 		goto error;
 	}
 
-	if (iptunnel_pull_header(skb, VXLAN_HLEN, htons(ETH_P_TEB)))
+	if (isnsh) {
+		struct nshhdr *nsh = nsh_hdr(skb);
+
+		if (unlikely(nsh->b.svc_idx == 0 || nsh->b.ver || 
+                     nsh->b.len != 6 || nsh->b.mdtype != 0x01 ||
+                     nsh->b.proto != NSH_P_ETHERNET)) {
+			pr_warn("NSH service index reached zero or not supported\n");
+			goto drop;
+		}
+
+		nsp = nsh->b.b2; /* same as svc_path | htonl(svc_idx) */
+	}
+
+	if (iptunnel_pull_header(skb, isnsh ? NSH_HLEN : VXLAN_HLEN,
+				 htons(ETH_P_TEB)))
 		goto drop;
 
 	vs = rcu_dereference_sk_user_data(sk);
 	if (!vs)
 		goto drop;
 
-	vs->rcv(vs, skb, vxh->vx_vni);
+	vs->rcv(vs, skb, vxh->vx_vni, nsp);
 	return 0;
 
 drop:
@@ -177,17 +212,18 @@ static int handle_offloads(struct sk_buff *skb)
 }
 
 int vxlan_xmit_skb(struct vxlan_sock *vs,
-		   struct rtable *rt, struct sk_buff *skb,
+		   struct rtable *rt, struct sk_buff *skb, struct nsh_ctx *nc,
 		   __be32 src, __be32 dst, __u8 tos, __u8 ttl, __be16 df,
-		   __be16 src_port, __be16 dst_port, __be32 vni)
+		   __be16 src_port, __be16 dst_port, __be32 vni, __be32 nsp)
 {
+	bool isnsh = (dst_port == htons(NSH_DST_PORT));
 	struct vxlanhdr *vxh;
 	struct udphdr *uh;
 	int min_headroom;
 	int err;
 
 	min_headroom = LL_RESERVED_SPACE(rt_dst(rt).dev) + rt_dst(rt).header_len
-			+ VXLAN_HLEN + sizeof(struct iphdr)
+			+ (isnsh ? NSH_HLEN : VXLAN_HLEN) + sizeof(struct iphdr)
 			+ (vlan_tx_tag_present(skb) ? VLAN_HLEN : 0);
 
 	/* Need space for new headers (invalidates iph ptr) */
@@ -205,6 +241,21 @@ int vxlan_xmit_skb(struct vxlan_sock *vs,
 	}
 
 	skb_reset_inner_headers(skb);
+
+	if (isnsh) {
+		struct nshhdr *nsh;
+		uint8_t nsi = ntohl(nsp) & NSH_M_NSI;
+
+		nsh = (struct nshhdr *) __skb_push(skb, sizeof(*nsh));
+        memset(&nsh->b, 0, sizeof nsh->b);
+		nsh->b.len = 6;
+		nsh->b.mdtype = NSH_M_TYPE1;
+		nsh->b.proto = NSH_P_ETHERNET;
+		/* b2 should precede svc_idx, else svc_idx will be zero */
+		nsh->b.b2 = nsp & htonl(NSH_M_NSP);
+		nsh->b.svc_idx = nsi ? nsi : 0x01;
+		memcpy(&nsh->c, nc, sizeof nsh->c);
+	}
 
 	vxh = (struct vxlanhdr *) __skb_push(skb, sizeof(*vxh));
 	vxh->vx_flags = htonl(VXLAN_FLAGS);

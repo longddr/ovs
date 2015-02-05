@@ -90,6 +90,8 @@
     DEFINE_OFPACT(SET_QUEUE,       ofpact_queue,         ofpact)    \
     DEFINE_OFPACT(POP_QUEUE,       ofpact_null,          ofpact)    \
     DEFINE_OFPACT(FIN_TIMEOUT,     ofpact_fin_timeout,   ofpact)    \
+    DEFINE_OFPACT(SET_NSP,         ofpact_nsp,           ofpact)    \
+    DEFINE_OFPACT(SET_NSI,         ofpact_nsi,           ofpact)    \
                                                                     \
     /* Flow table interaction. */                                   \
     DEFINE_OFPACT(RESUBMIT,        ofpact_resubmit,      ofpact)    \
@@ -412,6 +414,22 @@ struct ofpact_fin_timeout {
     struct ofpact ofpact;
     uint16_t fin_idle_timeout;
     uint16_t fin_hard_timeout;
+};
+
+/* OFPACT_SET_NSP.
+ *
+ * Used for NXAST_SET_NSP. */
+struct ofpact_nsp {
+    struct ofpact ofpact;
+    uint32_t nsp;
+};
+
+/* OFPACT_SET_NSI.
+ *
+ * Used for NXAST_SET_NSI. */
+struct ofpact_nsi {
+    struct ofpact ofpact;
+    uint8_t nsi;
 };
 
 /* OFPACT_WRITE_METADATA.

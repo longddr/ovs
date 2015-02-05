@@ -51,6 +51,8 @@
 
 #include "flow_netlink.h"
 
+#define NSH_M_NSI 0x000000FF
+
 static void update_range__(struct sw_flow_match *match,
 			   size_t offset, size_t size, bool is_mask)
 {
@@ -345,6 +347,7 @@ static int ipv4_tun_from_nlattr(const struct nlattr *attr,
 	int rem;
 	bool ttl = false;
 	__be16 tun_flags = 0;
+	__be32 nsp = 0;
 
 	nla_for_each_nested(a, attr, rem) {
 		int type = nla_type(a);
@@ -357,6 +360,8 @@ static int ipv4_tun_from_nlattr(const struct nlattr *attr,
 			[OVS_TUNNEL_KEY_ATTR_DONT_FRAGMENT] = 0,
 			[OVS_TUNNEL_KEY_ATTR_CSUM] = 0,
 			[OVS_TUNNEL_KEY_ATTR_OAM] = 0,
+			[OVS_TUNNEL_KEY_ATTR_NSP] = sizeof(u32),
+			[OVS_TUNNEL_KEY_ATTR_NSI] = 1,
 			[OVS_TUNNEL_KEY_ATTR_GENEVE_OPTS] = -1,
 		};
 
@@ -405,6 +410,14 @@ static int ipv4_tun_from_nlattr(const struct nlattr *attr,
 			break;
 		case OVS_TUNNEL_KEY_ATTR_OAM:
 			tun_flags |= TUNNEL_OAM;
+			break;
+		case OVS_TUNNEL_KEY_ATTR_NSP:
+			nsp |= htonl(be32_to_cpu(nla_get_be32(a)) << 8);
+			tun_flags |= TUNNEL_NSP;
+			break;
+		case OVS_TUNNEL_KEY_ATTR_NSI:
+			nsp |= htonl(nla_get_u8(a));
+			tun_flags |= TUNNEL_NSI;
 			break;
 		case OVS_TUNNEL_KEY_ATTR_GENEVE_OPTS:
 			if (nla_len(a) > sizeof(match->key->tun_opts)) {
@@ -462,6 +475,7 @@ static int ipv4_tun_from_nlattr(const struct nlattr *attr,
 		}
 	}
 
+	SW_FLOW_KEY_PUT(match, tun_key.nsp, nsp, is_mask);
 	SW_FLOW_KEY_PUT(match, tun_key.tun_flags, tun_flags, is_mask);
 
 	if (rem > 0) {
@@ -490,6 +504,8 @@ static int ipv4_tun_to_nlattr(struct sk_buff *skb,
 			      int swkey_tun_opts_len)
 {
 	struct nlattr *nla;
+	__be32 nsp = cpu_to_be32(ntohl(output->nsp) >> 8);
+	u8 nsi = ntohl(output->nsp) & NSH_M_NSI;
 
 	nla = nla_nest_start(skb, OVS_KEY_ATTR_TUNNEL);
 	if (!nla)
@@ -517,6 +533,12 @@ static int ipv4_tun_to_nlattr(struct sk_buff *skb,
 		return -EMSGSIZE;
 	if ((output->tun_flags & TUNNEL_OAM) &&
 		nla_put_flag(skb, OVS_TUNNEL_KEY_ATTR_OAM))
+		return -EMSGSIZE;
+	if (output->tun_flags & TUNNEL_NSP &&
+	    nla_put_be32(skb, OVS_TUNNEL_KEY_ATTR_NSP, nsp))
+		return -EMSGSIZE;
+	if (output->tun_flags & TUNNEL_NSI &&
+	    nla_put_u8(skb, OVS_TUNNEL_KEY_ATTR_NSI, nsi))
 		return -EMSGSIZE;
 	if (tun_opts &&
 	    nla_put(skb, OVS_TUNNEL_KEY_ATTR_GENEVE_OPTS,

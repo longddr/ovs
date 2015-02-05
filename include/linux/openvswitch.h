@@ -272,6 +272,10 @@ enum ovs_vport_attr {
 enum {
 	OVS_TUNNEL_ATTR_UNSPEC,
 	OVS_TUNNEL_ATTR_DST_PORT, /* 16-bit UDP port, used by L4 tunnels. */
+	OVS_TUNNEL_ATTR_NSH_NPC,  /* 32-bit NSH network platform context */
+	OVS_TUNNEL_ATTR_NSH_NSC,  /* 32-bit NSH network shared context */
+	OVS_TUNNEL_ATTR_NSH_SPC,  /* 32-bit NSH service platform context */
+	OVS_TUNNEL_ATTR_NSH_SSC,  /* 32-bit NSH service shared context */
 	__OVS_TUNNEL_ATTR_MAX
 };
 
@@ -330,6 +334,12 @@ enum ovs_key_attr {
 	__OVS_KEY_ATTR_MAX
 };
 
+/**
+ * OVS_TUNNEL_KEY_ATTR_NSI below can never be zero, because
+ * if it is zero the packet gets dropped, thus all outgoing
+ * packets have this defaulted to 1 if no outgoing value is
+ * explicitly set.
+ */
 #define OVS_KEY_ATTR_MAX (__OVS_KEY_ATTR_MAX - 1)
 
 enum ovs_tunnel_key_attr {
@@ -341,6 +351,8 @@ enum ovs_tunnel_key_attr {
 	OVS_TUNNEL_KEY_ATTR_DONT_FRAGMENT,	/* No argument, set DF. */
 	OVS_TUNNEL_KEY_ATTR_CSUM,		/* No argument. CSUM packet. */
 	OVS_TUNNEL_KEY_ATTR_OAM,		/* No argument, OAM frame. */
+	OVS_TUNNEL_KEY_ATTR_NSP,		/* be32 NSH svc path (lower 24 bits) */
+	OVS_TUNNEL_KEY_ATTR_NSI,		/* u8 NSH service index */
 	OVS_TUNNEL_KEY_ATTR_GENEVE_OPTS,	/* Array of Geneve options */
 	__OVS_TUNNEL_KEY_ATTR_MAX
 };

@@ -143,6 +143,10 @@ enum OVS_PACKED_ENUM mf_field_id {
     MFF_ND_SLL,                 /* mac */
     MFF_ND_TLL,                 /* mac */
 
+    /* Network Service Headers (NSH) Fields */
+    MFF_NSP,                    /* be32 */
+    MFF_NSI,                    /* u8 */
+
     MFF_N_IDS
 };
 

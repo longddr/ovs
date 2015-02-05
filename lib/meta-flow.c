@@ -787,7 +787,37 @@ const struct mf_field mf_fields[MFF_N_IDS] = {
         OFPUTIL_P_NXM_OXM_ANY,
         OFPUTIL_P_NXM_OXM_ANY,
         -1,
-    }
+    },
+
+    /* ## ---- ## */
+    /* ## L"S" ## */
+    /* ## ---- ## */
+
+    {
+        MFF_NSP, "nsp", NULL,
+        sizeof(ovs_be32), 24,
+        MFM_FULLY,
+        MFS_HEXADECIMAL,
+        MFP_NONE,
+        true,
+        NXM_NX_NSP, "NXM_NX_NSP",
+        NXM_NX_NSP, "NXM_NX_NSP", 0,
+        OFPUTIL_P_NXM_OXM_ANY,
+        OFPUTIL_P_NXM_OXM_ANY,
+        -1,
+    }, {
+        MFF_NSI, "nsi", NULL,
+        MF_FIELD_SIZES(u8),
+        MFM_NONE,
+        MFS_DECIMAL,
+        MFP_NONE,
+        true,
+        NXM_NX_NSI, "NXM_NX_NSI",
+        NXM_NX_NSI, "NXM_NX_NSI", 0,
+        OFPUTIL_P_NXM_OXM_ANY,
+        OFPUTIL_P_NXM_OXM_ANY,
+        -1,
+    },
 };
 
 /* Maps an NXM or OXM header value to an mf_field. */
@@ -926,6 +956,10 @@ mf_is_all_wild(const struct mf_field *mf, const struct flow_wildcards *wc)
     case MFF_TUN_TTL:
     case MFF_TUN_FLAGS:
         return !wc->masks.tunnel.tun_id;
+    case MFF_NSP:
+        return !wc->masks.tunnel.nsp;
+    case MFF_NSI:
+        return !wc->masks.tunnel.nsi;
     case MFF_METADATA:
         return !wc->masks.metadata;
     case MFF_IN_PORT:
@@ -1202,6 +1236,8 @@ mf_is_value_valid(const struct mf_field *mf, const union mf_value *value)
     case MFF_ND_TARGET:
     case MFF_ND_SLL:
     case MFF_ND_TLL:
+    case MFF_NSP:
+    case MFF_NSI:
         return true;
 
     case MFF_IN_PORT_OXM: {
@@ -1441,6 +1477,14 @@ mf_get_value(const struct mf_field *mf, const struct flow *flow,
         value->ipv6 = flow->nd_target;
         break;
 
+    case MFF_NSP:
+        value->be32 = flow->tunnel.nsp;
+        break;
+
+    case MFF_NSI:
+        value->u8 = flow->tunnel.nsi;
+        break;
+
     case MFF_N_IDS:
     default:
         OVS_NOT_REACHED();
@@ -1641,6 +1685,14 @@ mf_set_value(const struct mf_field *mf,
 
     case MFF_ND_TARGET:
         match_set_nd_target(match, &value->ipv6);
+        break;
+
+    case MFF_NSP:
+        match_set_nsp(match, value->be32);
+        break;
+
+    case MFF_NSI:
+        match_set_nsi(match, value->u8);
         break;
 
     case MFF_N_IDS:
@@ -1865,6 +1917,14 @@ mf_set_flow_value(const struct mf_field *mf,
         flow->nd_target = value->ipv6;
         break;
 
+    case MFF_NSP:
+        flow->tunnel.nsp = value->be32;
+        break;
+
+    case MFF_NSI:
+        flow->tunnel.nsi = value->u8;
+        break;
+
     case MFF_N_IDS:
     default:
         OVS_NOT_REACHED();
@@ -2081,6 +2141,14 @@ mf_set_wild(const struct mf_field *mf, struct match *match)
         memset(&match->flow.nd_target, 0, sizeof match->flow.nd_target);
         break;
 
+    case MFF_NSP:
+        match_set_nsp_masked(match, htonl(0), htonl(0));
+        break;
+
+    case MFF_NSI:
+        match_set_nsi_masked(match, 0, 0);
+        break;
+
     case MFF_N_IDS:
     default:
         OVS_NOT_REACHED();
@@ -2251,6 +2319,14 @@ mf_set(const struct mf_field *mf,
 
     case MFF_TCP_FLAGS:
         match_set_tcp_flags_masked(match, value->be16, mask->be16);
+        break;
+
+    case MFF_NSP:
+        match_set_nsp_masked(match, value->be32, mask->be32);
+        break;
+
+    case MFF_NSI:
+        match_set_nsi_masked(match, value->u8, mask->u8);
         break;
 
     case MFF_N_IDS:

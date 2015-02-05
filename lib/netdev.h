@@ -103,6 +103,22 @@ struct netdev_stats {
 
 /* Configuration specific to tunnels. */
 struct netdev_tunnel_config {
+    bool in_nsp_present;
+    bool in_nsp_flow;
+    ovs_be32 in_nsp;            /* incoming NSH service path */
+
+    bool out_nsp_present;
+    bool out_nsp_flow;
+    ovs_be32 out_nsp;           /* outgoing NSH service path */
+
+    bool in_nsi_present;
+    bool in_nsi_flow;
+    uint8_t in_nsi;             /* incoming NSH service index */
+
+    bool out_nsi_present;
+    bool out_nsi_flow;
+    uint8_t out_nsi;            /* outgoing NSH service index */
+
     bool in_key_present;
     bool in_key_flow;
     ovs_be64 in_key;
@@ -127,6 +143,11 @@ struct netdev_tunnel_config {
     bool csum;
     bool ipsec;
     bool dont_fragment;
+
+    ovs_be32 nsh_npc;           /* NSH network platform context */
+    ovs_be32 nsh_nsc;           /* NSH network shared context */
+    ovs_be32 nsh_spc;           /* NSH service platform context */
+    ovs_be32 nsh_ssc;           /* NSH service shared context */
 };
 
 void netdev_run(void);

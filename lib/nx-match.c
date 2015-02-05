@@ -716,6 +716,9 @@ nx_put_raw(struct ofpbuf *b, enum ofp_version oxm, const struct match *match,
     nxm_put_64m(b, mf_oxm_header(MFF_TUN_ID, oxm),
                 flow->tunnel.tun_id, match->wc.masks.tunnel.tun_id);
 
+    nxm_put_32m(b, NXM_NX_NSP, flow->tunnel.nsp, match->wc.masks.tunnel.nsp);
+    nxm_put_8m(b, NXM_NX_NSI, flow->tunnel.nsi, match->wc.masks.tunnel.nsi);
+
     /* Other tunnel metadata. */
     nxm_put_32m(b, mf_oxm_header(MFF_TUN_SRC, oxm),
                 flow->tunnel.ip_src, match->wc.masks.tunnel.ip_src);

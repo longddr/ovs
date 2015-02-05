@@ -2,7 +2,7 @@
 #define __LINUX_GSO_WRAPPER_H
 
 #include <linux/version.h>
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,12,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0)
 
 #include <linux/netdevice.h>
 #include <linux/skbuff.h>

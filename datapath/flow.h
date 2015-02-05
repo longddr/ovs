@@ -41,9 +41,13 @@ struct sk_buff;
 #define OVS_TUNNEL_KEY_SIZE					\
         (offsetof(struct ovs_key_ipv4_tunnel, ipv4_ttl) + 	\
          FIELD_SIZEOF(struct ovs_key_ipv4_tunnel, ipv4_ttl))
+/* Used for masking nsp and nsi values in field nsp below */
+#define NSH_M_NSP	0xFFFFFF00
+#define NSH_M_NSI	0x000000FF
 
 struct ovs_key_ipv4_tunnel {
 	__be64 tun_id;
+	__be32 nsp;      /* it contains (nsp - 24 bits | nsi - 8 bits) here */
 	__be32 ipv4_src;
 	__be32 ipv4_dst;
 	__be16 tun_flags;
@@ -68,11 +72,12 @@ struct ovs_tunnel_info {
 
 static inline void ovs_flow_tun_info_init(struct ovs_tunnel_info *tun_info,
 					 const struct iphdr *iph, __be64 tun_id,
-					 __be16 tun_flags,
+					 __be32 nsp, __be16 tun_flags,
 					 struct geneve_opt *opts,
 					 u8 opts_len)
 {
 	tun_info->tunnel.tun_id = tun_id;
+	tun_info->tunnel.nsp = nsp;
 	tun_info->tunnel.ipv4_src = iph->saddr;
 	tun_info->tunnel.ipv4_dst = iph->daddr;
 	tun_info->tunnel.ipv4_tos = iph->tos;

@@ -130,6 +130,10 @@ void match_set_ipv6_label_masked(struct match *, ovs_be32, ovs_be32);
 void match_set_nd_target(struct match *, const struct in6_addr *);
 void match_set_nd_target_masked(struct match *, const struct in6_addr *,
                                 const struct in6_addr *);
+void match_set_nsp(struct match *, ovs_be32 nsp);
+void match_set_nsp_masked(struct match *, ovs_be32 nsp, ovs_be32 mask);
+void match_set_nsi_masked(struct match *match, uint8_t nsi, uint8_t mask);
+void match_set_nsi(struct match *match, uint8_t nsi);
 
 bool match_equal(const struct match *, const struct match *);
 uint32_t match_hash(const struct match *, uint32_t basis);
