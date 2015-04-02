@@ -82,7 +82,7 @@ static int vxlan_get_options(const struct vport *vport, struct sk_buff *skb)
 	__be16 dst_port = inet_sport(vxlan_port->vs->sock->sk);
 	struct nsh_ctx *n = &vxlan_port->nsh_ctx;
 
-	if (nla_put_u16(skb, OVS_TUNNEL_ATTR_DST_PORT, ntohs(dst_port)))
+	if (nla_put_u16(skb, OVS_TUNNEL_ATTR_DST_PORT, ntohs(dst_port))) 
 		return -EMSGSIZE;
 
 	if (nla_put_u32(skb, OVS_TUNNEL_ATTR_NSH_NPC, ntohl(n->npc)))
@@ -186,16 +186,14 @@ static int vxlan_tnl_send(struct vport *vport, struct sk_buff *skb)
 	__be16 src_port;
 	__be32 saddr;
 	__be16 df;
-	int port_min;
-	int port_max;
 	int err;
 
-	if (unlikely(!OVS_CB(skb)->tun_info)) {
-		err = -EINVAL;
-		goto error;
-	}
-
-	tun_key = &OVS_CB(skb)->tun_info->tunnel;
+        if (unlikely(!OVS_CB(skb)->tun_info)) {
+                err = -EINVAL;
+                goto error;
+        }
+ 
+        tun_key = &OVS_CB(skb)->tun_info->tunnel;
 
 	/* Route lookup */
 	saddr = tun_key->ipv4_src;
@@ -209,18 +207,19 @@ static int vxlan_tnl_send(struct vport *vport, struct sk_buff *skb)
 	}
 
 	df = tun_key->tun_flags & TUNNEL_DONT_FRAGMENT ? htons(IP_DF) : 0;
-	skb->local_df = 1;
+	skb->ignore_df = 1;
 
-	inet_get_local_port_range(net, &port_min, &port_max);
-	src_port = vxlan_src_port(port_min, port_max, skb);
+	src_port = udp_flow_src_port(net, skb, 0, 0, true);
 
-	err = vxlan_xmit_skb(vxlan_port->vs, rt, skb, &vxlan_port->nsh_ctx,
-			     saddr, tun_key->ipv4_dst,
-			     tun_key->ipv4_tos,
-			     tun_key->ipv4_ttl, df,
-			     src_port, dst_port,
-			     htonl(be64_to_cpu(tun_key->tun_id) << 8),
-			     OVS_CB(skb)->tun_info->tunnel.nsp);
+        err = vxlan_xmit_skb(vxlan_port->vs, rt, skb, &vxlan_port->nsh_ctx,
+                             saddr, tun_key->ipv4_dst,
+                             tun_key->ipv4_tos,
+                             tun_key->ipv4_ttl, df,
+                             src_port, dst_port,
+                             htonl(be64_to_cpu(tun_key->tun_id) << 8),
+                             OVS_CB(skb)->tun_info->tunnel.nsp);
+
+
 	if (err < 0)
 		ip_rt_put(rt);
 error:

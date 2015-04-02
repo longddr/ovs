@@ -7,7 +7,7 @@
 #include <net/nsh.h>
 
 #include <linux/version.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)
 #include_next <net/vxlan.h>
 
 static inline int rpl_vxlan_xmit_skb(struct vxlan_sock *vs,
@@ -20,8 +20,13 @@ static inline int rpl_vxlan_xmit_skb(struct vxlan_sock *vs,
 		return -ENOSYS;
 	}
 
+#ifdef HAVE_VXLAN_XMIT_SKB_XNET_ARG
+        return vxlan_xmit_skb(vs, rt, skb, src, dst, tos, ttl, df,
+                              src_port, dst_port, vni, false);
+#else
 	return vxlan_xmit_skb(vs, rt, skb, src, dst, tos, ttl, df,
 			      src_port, dst_port, vni);
+#endif
 }
 
 #define vxlan_xmit_skb rpl_vxlan_xmit_skb

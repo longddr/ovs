@@ -19,7 +19,7 @@
  */
 
 #include <linux/version.h>
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,17,0)
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -111,7 +111,6 @@ static int vxlan_udp_encap_recv(struct sock *sk, struct sk_buff *skb)
 
 	if (isnsh) {
 		struct nshhdr *nsh = nsh_hdr(skb);
-
 		if (unlikely(nsh->b.svc_idx == 0 || nsh->b.ver || 
                      nsh->b.len != 6 || nsh->b.mdtype != 0x01 ||
                      nsh->b.proto != NSH_P_ETHERNET)) {
@@ -245,9 +244,8 @@ int vxlan_xmit_skb(struct vxlan_sock *vs,
 	if (isnsh) {
 		struct nshhdr *nsh;
 		uint8_t nsi = ntohl(nsp) & NSH_M_NSI;
-
 		nsh = (struct nshhdr *) __skb_push(skb, sizeof(*nsh));
-        memset(&nsh->b, 0, sizeof nsh->b);
+       		memset(&nsh->b, 0, sizeof nsh->b);
 		nsh->b.len = 6;
 		nsh->b.mdtype = NSH_M_TYPE1;
 		nsh->b.proto = NSH_P_ETHERNET;
@@ -277,7 +275,8 @@ int vxlan_xmit_skb(struct vxlan_sock *vs,
 	if (err)
 		return err;
 
-	return iptunnel_xmit(rt, skb, src, dst, IPPROTO_UDP, tos, ttl, df, false);
+        return iptunnel_xmit(vs->sock->sk, rt, skb, src, dst, IPPROTO_UDP,
+                             tos, ttl, df, false);
 }
 
 static void rcu_free_vs(struct rcu_head *rcu)
