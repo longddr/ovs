@@ -144,10 +144,10 @@ struct netdev_tunnel_config {
     bool ipsec;
     bool dont_fragment;
 
-    ovs_be32 nsh_npc;           /* NSH network platform context */
-    ovs_be32 nsh_nsc;           /* NSH network shared context */
-    ovs_be32 nsh_spc;           /* NSH service platform context */
-    ovs_be32 nsh_ssc;           /* NSH service shared context */
+    ovs_be32 nsh_c1;           /* NSH Context C1 */
+    ovs_be32 nsh_c2;           /* NSH Context C2 */
+    ovs_be32 nsh_c3;           /* NSH Context C3 */
+    ovs_be32 nsh_c4;           /* NSH Context C4 */
 };
 
 void netdev_run(void);

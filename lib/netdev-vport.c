@@ -530,14 +530,14 @@ set_tunnel_config(struct netdev *dev_, const struct smap *args)
             if (!strcmp(node->value, "false")) {
                 tnl_cfg.dont_fragment = false;
             }
-        } else if (!strcmp(node->key, "npc") && is_nsh) {
-            tnl_cfg.nsh_npc = htonl(strtoul(node->value, NULL, 0));
-        } else if (!strcmp(node->key, "nsc") && is_nsh) {
-            tnl_cfg.nsh_nsc = htonl(strtoul(node->value, NULL, 0));
-        } else if (!strcmp(node->key, "spc") && is_nsh) {
-            tnl_cfg.nsh_spc = htonl(strtoul(node->value, NULL, 0));
-        } else if (!strcmp(node->key, "ssc") && is_nsh) {
-            tnl_cfg.nsh_ssc = htonl(strtoul(node->value, NULL, 0));
+        } else if (!strcmp(node->key, "c1") && is_nsh) {
+            tnl_cfg.nsh_c1 = htonl(strtoul(node->value, NULL, 0));
+        } else if (!strcmp(node->key, "c2") && is_nsh) {
+            tnl_cfg.nsh_c2 = htonl(strtoul(node->value, NULL, 0));
+        } else if (!strcmp(node->key, "c3") && is_nsh) {
+            tnl_cfg.nsh_c3 = htonl(strtoul(node->value, NULL, 0));
+        } else if (!strcmp(node->key, "c4") && is_nsh) {
+            tnl_cfg.nsh_c4 = htonl(strtoul(node->value, NULL, 0));
         } else if (!strcmp(node->key, "peer_cert") && tnl_cfg.ipsec) {
             if (smap_get(args, "certificate")) {
                 ipsec_mech_set = true;
@@ -801,20 +801,20 @@ get_tunnel_config(const struct netdev *dev, struct smap *args)
         smap_add(args, "df_default", "false");
     }
 
-    if (is_nsh && tnl_cfg.nsh_npc) {
-        smap_add_format(args, "npc", "%d", ntohl(tnl_cfg.nsh_npc));
+    if (is_nsh && tnl_cfg.nsh_c1) {
+        smap_add_format(args, "c1", "%d", ntohl(tnl_cfg.nsh_c1));
     }
 
-    if (is_nsh && tnl_cfg.nsh_nsc) {
-        smap_add_format(args, "nsc", "%d", ntohl(tnl_cfg.nsh_nsc));
+    if (is_nsh && tnl_cfg.nsh_c2) {
+        smap_add_format(args, "c2", "%d", ntohl(tnl_cfg.nsh_c2));
     }
 
-    if (is_nsh && tnl_cfg.nsh_spc) {
-        smap_add_format(args, "spc", "%d", ntohl(tnl_cfg.nsh_spc));
+    if (is_nsh && tnl_cfg.nsh_c3) {
+        smap_add_format(args, "c3", "%d", ntohl(tnl_cfg.nsh_c3));
     }
 
-    if (is_nsh && tnl_cfg.nsh_ssc) {
-        smap_add_format(args, "ssc", "%d", ntohl(tnl_cfg.nsh_ssc));
+    if (is_nsh && tnl_cfg.nsh_c4) {
+        smap_add_format(args, "c4", "%d", ntohl(tnl_cfg.nsh_c4));
     }
 
     return 0;

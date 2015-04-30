@@ -272,10 +272,10 @@ enum ovs_vport_attr {
 enum {
 	OVS_TUNNEL_ATTR_UNSPEC,
 	OVS_TUNNEL_ATTR_DST_PORT, /* 16-bit UDP port, used by L4 tunnels. */
-	OVS_TUNNEL_ATTR_NSH_NPC,  /* 32-bit NSH network platform context */
-	OVS_TUNNEL_ATTR_NSH_NSC,  /* 32-bit NSH network shared context */
-	OVS_TUNNEL_ATTR_NSH_SPC,  /* 32-bit NSH service platform context */
-	OVS_TUNNEL_ATTR_NSH_SSC,  /* 32-bit NSH service shared context */
+	OVS_TUNNEL_ATTR_NSH_C1,  /* 32-bit NSH Context C1 */
+	OVS_TUNNEL_ATTR_NSH_C2,  /* 32-bit NSH Context C2 */
+	OVS_TUNNEL_ATTR_NSH_C3,  /* 32-bit NSH Context C3 */
+	OVS_TUNNEL_ATTR_NSH_C4,  /* 32-bit NSH Context C4 */
 	__OVS_TUNNEL_ATTR_MAX
 };
 

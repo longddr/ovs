@@ -681,17 +681,17 @@ dpif_linux_port_add__(struct dpif_linux *dpif, struct netdev *netdev,
         }
 
         /* doesn't matter if nsh ctx params are zero, send them anyways */
-        nl_msg_put_u32(&options, OVS_TUNNEL_ATTR_NSH_NPC,
-                       ntohl(tnl_cfg->nsh_npc));
+        nl_msg_put_u32(&options, OVS_TUNNEL_ATTR_NSH_C1,
+                       ntohl(tnl_cfg->nsh_c1));
 
-        nl_msg_put_u32(&options, OVS_TUNNEL_ATTR_NSH_NSC,
-                       ntohl(tnl_cfg->nsh_nsc));
+        nl_msg_put_u32(&options, OVS_TUNNEL_ATTR_NSH_C2,
+                       ntohl(tnl_cfg->nsh_c2));
 
-        nl_msg_put_u32(&options, OVS_TUNNEL_ATTR_NSH_SPC,
-                       ntohl(tnl_cfg->nsh_spc));
+        nl_msg_put_u32(&options, OVS_TUNNEL_ATTR_NSH_C3,
+                       ntohl(tnl_cfg->nsh_c3));
 
-        nl_msg_put_u32(&options, OVS_TUNNEL_ATTR_NSH_SSC,
-                       ntohl(tnl_cfg->nsh_ssc));
+        nl_msg_put_u32(&options, OVS_TUNNEL_ATTR_NSH_C4,
+                       ntohl(tnl_cfg->nsh_c4));
 
         request.options = ofpbuf_data(&options);
         request.options_len = ofpbuf_size(&options);

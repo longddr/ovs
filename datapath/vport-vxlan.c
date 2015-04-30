@@ -85,16 +85,16 @@ static int vxlan_get_options(const struct vport *vport, struct sk_buff *skb)
 	if (nla_put_u16(skb, OVS_TUNNEL_ATTR_DST_PORT, ntohs(dst_port))) 
 		return -EMSGSIZE;
 
-	if (nla_put_u32(skb, OVS_TUNNEL_ATTR_NSH_NPC, ntohl(n->npc)))
+	if (nla_put_u32(skb, OVS_TUNNEL_ATTR_NSH_C1, ntohl(n->c1)))
 		return -EMSGSIZE;
 
-	if (nla_put_u32(skb, OVS_TUNNEL_ATTR_NSH_NSC, ntohl(n->nsc)))
+	if (nla_put_u32(skb, OVS_TUNNEL_ATTR_NSH_C2, ntohl(n->c2)))
 		return -EMSGSIZE;
 
-	if (nla_put_u32(skb, OVS_TUNNEL_ATTR_NSH_SPC, ntohl(n->spc)))
+	if (nla_put_u32(skb, OVS_TUNNEL_ATTR_NSH_C3, ntohl(n->c3)))
 		return -EMSGSIZE;
 
-	if (nla_put_u32(skb, OVS_TUNNEL_ATTR_NSH_SSC, ntohl(n->ssc)))
+	if (nla_put_u32(skb, OVS_TUNNEL_ATTR_NSH_C4, ntohl(n->c4)))
 		return -EMSGSIZE;
 
 	return 0;
@@ -150,24 +150,24 @@ static struct vport *vxlan_tnl_create(const struct vport_parms *parms)
 
 	memset(&vxlan_port->nsh_ctx, 0x00, sizeof(vxlan_port->nsh_ctx));
 
-	a = nla_find_nested(options, OVS_TUNNEL_ATTR_NSH_NPC);
+	a = nla_find_nested(options, OVS_TUNNEL_ATTR_NSH_C1);
 	if (a && nla_len(a) == sizeof(u32)) {
-		vxlan_port->nsh_ctx.npc = htonl(nla_get_u32(a));
+		vxlan_port->nsh_ctx.c1 = htonl(nla_get_u32(a));
 	}
 
-	a = nla_find_nested(options, OVS_TUNNEL_ATTR_NSH_NSC);
+	a = nla_find_nested(options, OVS_TUNNEL_ATTR_NSH_C2);
 	if (a && nla_len(a) == sizeof(u32)) {
-		vxlan_port->nsh_ctx.nsc = htonl(nla_get_u32(a));
+		vxlan_port->nsh_ctx.c2 = htonl(nla_get_u32(a));
 	}
 
-	a = nla_find_nested(options, OVS_TUNNEL_ATTR_NSH_SPC);
+	a = nla_find_nested(options, OVS_TUNNEL_ATTR_NSH_C3);
 	if (a && nla_len(a) == sizeof(u32)) {
-		vxlan_port->nsh_ctx.spc = htonl(nla_get_u32(a));
+		vxlan_port->nsh_ctx.c3 = htonl(nla_get_u32(a));
 	}
 
-	a = nla_find_nested(options, OVS_TUNNEL_ATTR_NSH_SSC);
+	a = nla_find_nested(options, OVS_TUNNEL_ATTR_NSH_C4);
 	if (a && nla_len(a) == sizeof(u32)) {
-		vxlan_port->nsh_ctx.ssc = htonl(nla_get_u32(a));
+		vxlan_port->nsh_ctx.c4 = htonl(nla_get_u32(a));
 	}
 
 	return vport;

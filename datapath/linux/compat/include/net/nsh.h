@@ -64,16 +64,13 @@ struct nsh_base {
 
 /**
  * struct nsh_ctx - Keeps track of NSH context data
- * @npc: NSH network platform context
- * @nsc: NSH network shared context
- * @spc: NSH service platform context
- * @ssc: NSH service shared context
+ * @c<1-4>: NSH Contexts.
  */
 struct nsh_ctx {
-	__be32 npc;
-	__be32 nsc;
-	__be32 spc;
-	__be32 ssc;
+	__be32 c1;
+	__be32 c2;
+	__be32 c3;
+	__be32 c4;
 };
 
 /**
