@@ -99,6 +99,10 @@ NXAST_ACTION(NXAST_POP_MPLS,        nx_action_pop_mpls,     0, "pop_mpls")
 NXAST_ACTION(NXAST_SAMPLE,          nx_action_sample,       0, "sample")
 NXAST_ACTION(NXAST_SET_NSP,         nx_action_set_nsp,      0, "set_nsp")
 NXAST_ACTION(NXAST_SET_NSI,         nx_action_set_nsi,      0, "set_nsi")
+NXAST_ACTION(NXAST_SET_NSHC1,       nx_action_set_nshc1,    0, "set_nshc1")
+NXAST_ACTION(NXAST_SET_NSHC2,       nx_action_set_nshc2,    0, "set_nshc2")
+NXAST_ACTION(NXAST_SET_NSHC3,       nx_action_set_nshc3,    0, "set_nshc3")
+NXAST_ACTION(NXAST_SET_NSHC4,       nx_action_set_nshc4,    0, "set_nshc4")
 
 #undef OFPAT10_ACTION
 #undef OFPAT11_ACTION

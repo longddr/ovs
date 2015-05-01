@@ -135,6 +135,15 @@ void match_set_nsp_masked(struct match *, ovs_be32 nsp, ovs_be32 mask);
 void match_set_nsi_masked(struct match *match, uint8_t nsi, uint8_t mask);
 void match_set_nsi(struct match *match, uint8_t nsi);
 
+void match_set_nshc1(struct match *, ovs_be32 nshc1);
+void match_set_nshc1_masked(struct match *, ovs_be32 nshc1, ovs_be32 mask);
+void match_set_nshc2(struct match *, ovs_be32 nshc2);
+void match_set_nshc2_masked(struct match *, ovs_be32 nshc2, ovs_be32 mask);
+void match_set_nshc3(struct match *, ovs_be32 nshc3);
+void match_set_nshc3_masked(struct match *, ovs_be32 nshc3, ovs_be32 mask);
+void match_set_nshc4(struct match *, ovs_be32 nshc4);
+void match_set_nshc4_masked(struct match *, ovs_be32 nshc4, ovs_be32 mask);
+
 bool match_equal(const struct match *, const struct match *);
 uint32_t match_hash(const struct match *, uint32_t basis);
 

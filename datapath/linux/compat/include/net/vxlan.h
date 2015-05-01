@@ -34,7 +34,8 @@ static inline int rpl_vxlan_xmit_skb(struct vxlan_sock *vs,
 
 struct vxlan_sock;
 typedef void (vxlan_rcv_t)(struct vxlan_sock *vs, struct sk_buff *skb,
-			   __be32 key, __be32 nsp);
+			   __be32 key, __be32 nsp, __be32 nshc1, __be32 nshc2,
+               __be32 nshc3, __be32 nshc4);
 
 /* per UDP socket information */
 struct vxlan_sock {
@@ -53,9 +54,10 @@ struct vxlan_sock *vxlan_sock_add(struct net *net, __be16 port,
 void vxlan_sock_release(struct vxlan_sock *vs);
 
 int vxlan_xmit_skb(struct vxlan_sock *vs,
-		   struct rtable *rt, struct sk_buff *skb, struct nsh_ctx *nc,
+		   struct rtable *rt, struct sk_buff *skb,
 		   __be32 src, __be32 dst, __u8 tos, __u8 ttl, __be16 df,
-		   __be16 src_port, __be16 dst_port, __be32 vni, __be32 nsp);
+		   __be16 src_port, __be16 dst_port, __be32 vni, __be32 nsp,
+		   __be16 nshc1, __be16 nshc2, __be32 nshc3, __be32 nshc4);
 
 __be16 vxlan_src_port(__u16 port_min, __u16 port_max, struct sk_buff *skb);
 

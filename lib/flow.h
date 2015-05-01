@@ -61,6 +61,10 @@ BUILD_ASSERT_DECL(FLOW_NW_FRAG_LATER == NX_IP_FRAG_LATER);
 #define FLOW_TNL_F_OAM (1 << 3)
 #define FLOW_TNL_F_NSP (1 << 4)
 #define FLOW_TNL_F_NSI (1 << 5)
+#define FLOW_TNL_F_NSH_C1 (1 << 6)
+#define FLOW_TNL_F_NSH_C2 (1 << 7)
+#define FLOW_TNL_F_NSH_C3 (1 << 8)
+#define FLOW_TNL_F_NSH_C4 (1 << 9)
 
 const char *flow_tun_flag_to_string(uint32_t flags);
 

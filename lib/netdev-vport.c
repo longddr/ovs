@@ -139,17 +139,6 @@ netdev_vport_needs_dst_port(const struct netdev *dev)
              !strcmp("lisp", type)));
 }
 
-static bool
-netdev_vport_is_nsh(const struct netdev *dev)
-{
-    const struct netdev_class *class = netdev_get_class(dev);
-    const char *type = netdev_get_type(dev);
-
-    return (class->get_config == get_tunnel_config &&
-            (!strcmp("vxlan", type) || !strcmp("lisp", type) ||
-             !strcmp("gre", type) || !strcmp("gre64", type)));
-}
-
 const char *
 netdev_vport_class_get_dpif_port(const struct netdev_class *class)
 {
@@ -403,8 +392,8 @@ parse_key(const struct smap *args, const char *name,
 }
 
 static ovs_be32
-parse_nsp(const struct smap *args, const char *name,
-          bool *present, bool *flow)
+parse_nsh(const struct smap *args, const char *value,
+          const char *name, bool *present, bool *flow)
 {
     const char *s;
 
@@ -413,7 +402,7 @@ parse_nsp(const struct smap *args, const char *name,
 
     s = smap_get(args, name);
     if (!s) {
-        s = smap_get(args, "nsp");
+        s = smap_get(args, value);
         if (!s) {
             return 0;
         }
@@ -465,14 +454,12 @@ set_tunnel_config(struct netdev *dev_, const struct smap *args)
     bool ipsec_mech_set, needs_dst_port, has_csum;
     struct netdev_tunnel_config tnl_cfg;
     struct smap_node *node;
-    bool is_nsh;
 
     has_csum = strstr(type, "gre");
     ipsec_mech_set = false;
     memset(&tnl_cfg, 0, sizeof tnl_cfg);
 
     needs_dst_port = netdev_vport_needs_dst_port(dev_);
-    is_nsh = netdev_vport_is_nsh(dev_);
     tnl_cfg.ipsec = strstr(type, "ipsec");
     tnl_cfg.dont_fragment = true;
 
@@ -530,14 +517,6 @@ set_tunnel_config(struct netdev *dev_, const struct smap *args)
             if (!strcmp(node->value, "false")) {
                 tnl_cfg.dont_fragment = false;
             }
-        } else if (!strcmp(node->key, "c1") && is_nsh) {
-            tnl_cfg.nsh_c1 = htonl(strtoul(node->value, NULL, 0));
-        } else if (!strcmp(node->key, "c2") && is_nsh) {
-            tnl_cfg.nsh_c2 = htonl(strtoul(node->value, NULL, 0));
-        } else if (!strcmp(node->key, "c3") && is_nsh) {
-            tnl_cfg.nsh_c3 = htonl(strtoul(node->value, NULL, 0));
-        } else if (!strcmp(node->key, "c4") && is_nsh) {
-            tnl_cfg.nsh_c4 = htonl(strtoul(node->value, NULL, 0));
         } else if (!strcmp(node->key, "peer_cert") && tnl_cfg.ipsec) {
             if (smap_get(args, "certificate")) {
                 ipsec_mech_set = true;
@@ -576,6 +555,22 @@ set_tunnel_config(struct netdev *dev_, const struct smap *args)
         } else if (!strcmp(node->key, "nsi") ||
                    !strcmp(node->key, "in_nsi") ||
                    !strcmp(node->key, "out_nsi")) {
+            /* Handled separately below. */
+        } else if (!strcmp(node->key, "nshc1") ||
+                   !strcmp(node->key, "in_nshc1") ||
+                   !strcmp(node->key, "out_nshc1")) {
+            /* Handled separately below. */
+        } else if (!strcmp(node->key, "nshc2") ||
+                   !strcmp(node->key, "in_nshc2") ||
+                   !strcmp(node->key, "out_nshc2")) {
+            /* Handled separately below. */
+        } else if (!strcmp(node->key, "nshc3") ||
+                   !strcmp(node->key, "in_nshc3") ||
+                   !strcmp(node->key, "out_nshc3")) {
+            /* Handled separately below. */
+        } else if (!strcmp(node->key, "nshc4") ||
+                   !strcmp(node->key, "in_nshc4") ||
+                   !strcmp(node->key, "out_nshc4")) {
             /* Handled separately below. */
         } else {
             VLOG_WARN("%s: unknown %s argument '%s'", name, type, node->key);
@@ -651,11 +646,11 @@ set_tunnel_config(struct netdev *dev_, const struct smap *args)
                                &tnl_cfg.out_key_flow);
 
     if (tnl_cfg.dst_port == htons(NSH_DST_PORT)) {
-        tnl_cfg.in_nsp = parse_nsp(args, "in_nsp",
+        tnl_cfg.in_nsp = parse_nsh(args, "nsp", "in_nsp",
                                    &tnl_cfg.in_nsp_present,
                                    &tnl_cfg.in_nsp_flow);
 
-        tnl_cfg.out_nsp = parse_nsp(args, "out_nsp",
+        tnl_cfg.out_nsp = parse_nsh(args, "nsp", "out_nsp",
                                     &tnl_cfg.out_nsp_present,
                                     &tnl_cfg.out_nsp_flow);
 
@@ -675,6 +670,39 @@ set_tunnel_config(struct netdev *dev_, const struct smap *args)
         if (!tnl_cfg.out_nsi) {
             tnl_cfg.out_nsi = 1;
         }
+
+        tnl_cfg.in_nshc1 = parse_nsh(args, "nshc1", "in_nshc1",
+                                     &tnl_cfg.in_nshc1_present,
+                                     &tnl_cfg.in_nshc1_flow);
+
+        tnl_cfg.out_nshc1 = parse_nsh(args, "nshc1", "out_nshc1",
+                                      &tnl_cfg.out_nshc1_present,
+                                      &tnl_cfg.out_nshc1_flow);
+
+        tnl_cfg.in_nshc2 = parse_nsh(args, "nshc2", "in_nshc2",
+                                     &tnl_cfg.in_nshc2_present,
+                                     &tnl_cfg.in_nshc2_flow);
+
+        tnl_cfg.out_nshc2 = parse_nsh(args, "nshc2", "out_nshc2",
+                                      &tnl_cfg.out_nshc2_present,
+                                      &tnl_cfg.out_nshc2_flow);
+
+        tnl_cfg.in_nshc3 = parse_nsh(args, "nshc3", "in_nshc3",
+                                     &tnl_cfg.in_nshc3_present,
+                                     &tnl_cfg.in_nshc3_flow);
+
+        tnl_cfg.out_nshc3 = parse_nsh(args, "nshc3", "out_nshc3",
+                                      &tnl_cfg.out_nshc3_present,
+                                      &tnl_cfg.out_nshc3_flow);
+
+        tnl_cfg.in_nshc4 = parse_nsh(args, "nshc4", "in_nshc4",
+                                     &tnl_cfg.in_nshc4_present,
+                                     &tnl_cfg.in_nshc4_flow);
+
+        tnl_cfg.out_nshc4 = parse_nsh(args, "nshc4", "out_nshc4",
+                                      &tnl_cfg.out_nshc4_present,
+                                      &tnl_cfg.out_nshc4_flow);
+
     }
 
     ovs_mutex_lock(&dev->mutex);
@@ -692,7 +720,6 @@ get_tunnel_config(const struct netdev *dev, struct smap *args)
     struct netdev_vport *netdev = netdev_vport_cast(dev);
     struct netdev_tunnel_config tnl_cfg;
     const char *type = netdev_get_type(dev);
-    bool is_nsh = netdev_vport_is_nsh(dev);
 
     ovs_mutex_lock(&netdev->mutex);
     tnl_cfg = netdev->tnl_cfg;
@@ -771,6 +798,90 @@ get_tunnel_config(const struct netdev *dev, struct smap *args)
         }
     }
 
+    if (tnl_cfg.in_nshc1_flow && tnl_cfg.out_nshc1_flow) {
+        smap_add(args, "nshc1", "flow");
+    } else if (tnl_cfg.in_nshc1_present && tnl_cfg.out_nshc1_present
+               && tnl_cfg.in_nshc1 == tnl_cfg.out_nshc1) {
+        smap_add_format(args, "nshc1", "%#"PRIx32, ntohl(tnl_cfg.in_nshc1));
+    } else {
+        if (tnl_cfg.in_nshc1_flow) {
+            smap_add(args, "in_nshc1", "flow");
+        } else if (tnl_cfg.in_nshc1_present) {
+            smap_add_format(args, "in_nshc1", "%#"PRIx32,
+                            ntohl(tnl_cfg.in_nshc1));
+        }
+
+        if (tnl_cfg.out_nshc1_flow) {
+            smap_add(args, "out_nshc1", "flow");
+        } else if (tnl_cfg.out_nshc1_present) {
+            smap_add_format(args, "out_nshc1", "%#"PRIx32,
+                            ntohl(tnl_cfg.out_nshc1));
+        }
+    }
+
+    if (tnl_cfg.in_nshc2_flow && tnl_cfg.out_nshc2_flow) {
+        smap_add(args, "nshc2", "flow");
+    } else if (tnl_cfg.in_nshc2_present && tnl_cfg.out_nshc2_present
+               && tnl_cfg.in_nshc2 == tnl_cfg.out_nshc2) {
+        smap_add_format(args, "nshc2", "%#"PRIx32, ntohl(tnl_cfg.in_nshc2));
+    } else {
+        if (tnl_cfg.in_nshc2_flow) {
+            smap_add(args, "in_nshc2", "flow");
+        } else if (tnl_cfg.in_nshc2_present) {
+            smap_add_format(args, "in_nshc2", "%#"PRIx32,
+                            ntohl(tnl_cfg.in_nshc2));
+        }
+
+        if (tnl_cfg.out_nshc2_flow) {
+            smap_add(args, "out_nshc2", "flow");
+        } else if (tnl_cfg.out_nshc2_present) {
+            smap_add_format(args, "out_nshc2", "%#"PRIx32,
+                            ntohl(tnl_cfg.out_nshc2));
+        }
+    }
+
+    if (tnl_cfg.in_nshc3_flow && tnl_cfg.out_nshc3_flow) {
+        smap_add(args, "nshc3", "flow");
+    } else if (tnl_cfg.in_nshc3_present && tnl_cfg.out_nshc3_present
+               && tnl_cfg.in_nshc3 == tnl_cfg.out_nshc3) {
+        smap_add_format(args, "nshc3", "%#"PRIx32, ntohl(tnl_cfg.in_nshc3));
+    } else {
+        if (tnl_cfg.in_nshc3_flow) {
+            smap_add(args, "in_nshc3", "flow");
+        } else if (tnl_cfg.in_nshc3_present) {
+            smap_add_format(args, "in_nshc3", "%#"PRIx32,
+                            ntohl(tnl_cfg.in_nshc3));
+        }
+
+        if (tnl_cfg.out_nshc3_flow) {
+            smap_add(args, "out_nshc3", "flow");
+        } else if (tnl_cfg.out_nshc3_present) {
+            smap_add_format(args, "out_nshc3", "%#"PRIx32,
+                            ntohl(tnl_cfg.out_nshc3));
+        }
+    }
+
+    if (tnl_cfg.in_nshc4_flow && tnl_cfg.out_nshc4_flow) {
+        smap_add(args, "nshc4", "flow");
+    } else if (tnl_cfg.in_nshc4_present && tnl_cfg.out_nshc4_present
+               && tnl_cfg.in_nshc4 == tnl_cfg.out_nshc4) {
+        smap_add_format(args, "nshc4", "%#"PRIx32, ntohl(tnl_cfg.in_nshc4));
+    } else {
+        if (tnl_cfg.in_nshc4_flow) {
+            smap_add(args, "in_nshc4", "flow");
+        } else if (tnl_cfg.in_nshc4_present) {
+            smap_add_format(args, "in_nshc4", "%#"PRIx32,
+                            ntohl(tnl_cfg.in_nshc4));
+        }
+
+        if (tnl_cfg.out_nshc4_flow) {
+            smap_add(args, "out_nshc4", "flow");
+        } else if (tnl_cfg.out_nshc4_present) {
+            smap_add_format(args, "out_nshc4", "%#"PRIx32,
+                            ntohl(tnl_cfg.out_nshc4));
+        }
+    }
+
     if (tnl_cfg.ttl_inherit) {
         smap_add(args, "ttl", "inherit");
     } else if (tnl_cfg.ttl != DEFAULT_TTL) {
@@ -799,22 +910,6 @@ get_tunnel_config(const struct netdev *dev, struct smap *args)
 
     if (!tnl_cfg.dont_fragment) {
         smap_add(args, "df_default", "false");
-    }
-
-    if (is_nsh && tnl_cfg.nsh_c1) {
-        smap_add_format(args, "c1", "%d", ntohl(tnl_cfg.nsh_c1));
-    }
-
-    if (is_nsh && tnl_cfg.nsh_c2) {
-        smap_add_format(args, "c2", "%d", ntohl(tnl_cfg.nsh_c2));
-    }
-
-    if (is_nsh && tnl_cfg.nsh_c3) {
-        smap_add_format(args, "c3", "%d", ntohl(tnl_cfg.nsh_c3));
-    }
-
-    if (is_nsh && tnl_cfg.nsh_c4) {
-        smap_add_format(args, "c4", "%d", ntohl(tnl_cfg.nsh_c4));
     }
 
     return 0;

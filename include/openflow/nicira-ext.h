@@ -316,6 +316,10 @@ enum nx_action_subtype {
     NXAST_SET_MPLS_TC,          /* struct nx_action_ttl */
     NXAST_SET_NSP,              /* struct nx_action_set_nsp */
     NXAST_SET_NSI,              /* struct nx_action_set_nsi */
+    NXAST_SET_NSHC1,            /* struct nx_action_set_nshc1 */
+    NXAST_SET_NSHC2,            /* struct nx_action_set_nshc2 */
+    NXAST_SET_NSHC3,            /* struct nx_action_set_nshc3 */
+    NXAST_SET_NSHC4,            /* struct nx_action_set_nshc4 */
 };
 
 /* Header for Nicira-defined actions. */
@@ -1894,6 +1898,58 @@ OFP_ASSERT(sizeof(struct nx_action_output_reg) == 24);
 #define NXM_NX_NSI     NXM_HEADER  (0x0001, 38, 1)
 #define NXM_NX_NSI_W   NXM_HEADER_W(0x0001, 38, 1)
 
+/* NSH Context.
+ *
+ * For a packet received via a VXLAN tunnel includes a (32-bit)
+ * network service header context path (nshc*).
+ *
+ * Prereqs: None.
+ *
+ * Format: 32-bit integer in network byte order.
+ *
+ * Masking: Arbitrary masks. */
+#define NXM_NX_NSH_C1     NXM_HEADER  (0x0001, 39, 4)
+#define NXM_NX_NSH_C1_W   NXM_HEADER_W(0x0001, 39, 4)
+
+/* NSH Context.
+ *
+ * For a packet received via a VXLAN tunnel includes a (32-bit)
+ * network service header context path (nshc*).
+ *
+ * Prereqs: None.
+ *
+ * Format: 32-bit integer in network byte order.
+ *
+ * Masking: Arbitrary masks. */
+#define NXM_NX_NSH_C2     NXM_HEADER  (0x0001, 40, 4)
+#define NXM_NX_NSH_C2_W   NXM_HEADER_W(0x0001, 40, 4)
+
+/* NSH Context.
+ *
+ * For a packet received via a VXLAN tunnel includes a (32-bit)
+ * network service header context path (nshc*).
+ *
+ * Prereqs: None.
+ *
+ * Format: 32-bit integer in network byte order.
+ *
+ * Masking: Arbitrary masks. */
+#define NXM_NX_NSH_C3     NXM_HEADER  (0x0001, 41, 4)
+#define NXM_NX_NSH_C3_W   NXM_HEADER_W(0x0001, 41, 4)
+
+/* NSH Context.
+ *
+ * For a packet received via a VXLAN tunnel includes a (32-bit)
+ * network service header context path (nshc*).
+ *
+ * Prereqs: None.
+ *
+ * Format: 32-bit integer in network byte order.
+ *
+ * Masking: Arbitrary masks. */
+#define NXM_NX_NSH_C4     NXM_HEADER  (0x0001, 42, 4)
+#define NXM_NX_NSH_C4_W   NXM_HEADER_W(0x0001, 42, 4)
+
 
 /* ## --------------------- ## */
 /* ## Requests and replies. ## */
@@ -2459,5 +2515,57 @@ struct nx_action_set_nsi {
     uint8_t pad[5];
 };
 OFP_ASSERT(sizeof(struct nx_action_set_nsi) == 16);
+
+/* Action structure for NXAST_SET_NSHC1.
+ *
+ * Sets the encapsulating NSH Context to a 32-bit value. */
+struct nx_action_set_nshc1 {
+    ovs_be16 type;                  /* OFPAT_VENDOR. */
+    ovs_be16 len;                   /* Length is 16. */
+    ovs_be32 vendor;                /* NX_VENDOR_ID. */
+    ovs_be16 subtype;               /* NXAST_SET_NSHC1. */
+    uint8_t pad[2];
+    ovs_be32 nshc1;                 /* NSH Context. */
+};
+OFP_ASSERT(sizeof(struct nx_action_set_nshc1) == 16);
+
+/* Action structure for NXAST_SET_NSHC2.
+ *
+ * Sets the encapsulating NSH Context to a 32-bit value. */
+struct nx_action_set_nshc2 {
+    ovs_be16 type;                  /* OFPAT_VENDOR. */
+    ovs_be16 len;                   /* Length is 16. */
+    ovs_be32 vendor;                /* NX_VENDOR_ID. */
+    ovs_be16 subtype;               /* NXAST_SET_NSHC2. */
+    uint8_t pad[2];
+    ovs_be32 nshc2;                 /* NSH Context. */
+};
+OFP_ASSERT(sizeof(struct nx_action_set_nshc2) == 16);
+
+/* Action structure for NXAST_SET_NSHC3.
+ *
+ * Sets the encapsulating NSH Context to a 32-bit value. */
+struct nx_action_set_nshc3 {
+    ovs_be16 type;                  /* OFPAT_VENDOR. */
+    ovs_be16 len;                   /* Length is 16. */
+    ovs_be32 vendor;                /* NX_VENDOR_ID. */
+    ovs_be16 subtype;               /* NXAST_SET_NSHC3. */
+    uint8_t pad[2];
+    ovs_be32 nshc3;                 /* NSH Context. */
+};
+OFP_ASSERT(sizeof(struct nx_action_set_nshc3) == 16);
+
+/* Action structure for NXAST_SET_NSHC4.
+ *
+ * Sets the encapsulating NSH Context to a 32-bit value. */
+struct nx_action_set_nshc4 {
+    ovs_be16 type;                  /* OFPAT_VENDOR. */
+    ovs_be16 len;                   /* Length is 16. */
+    ovs_be32 vendor;                /* NX_VENDOR_ID. */
+    ovs_be16 subtype;               /* NXAST_SET_NSHC4. */
+    uint8_t pad[2];
+    ovs_be32 nshc4;                 /* NSH Context. */
+};
+OFP_ASSERT(sizeof(struct nx_action_set_nshc4) == 16);
 
 #endif /* openflow/nicira-ext.h */

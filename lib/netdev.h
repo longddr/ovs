@@ -144,10 +144,38 @@ struct netdev_tunnel_config {
     bool ipsec;
     bool dont_fragment;
 
-    ovs_be32 nsh_c1;           /* NSH Context C1 */
-    ovs_be32 nsh_c2;           /* NSH Context C2 */
-    ovs_be32 nsh_c3;           /* NSH Context C3 */
-    ovs_be32 nsh_c4;           /* NSH Context C4 */
+    bool in_nshc1_present;
+    bool in_nshc1_flow;
+    ovs_be32 in_nshc1;         /* incoming NSH context c1 */
+
+    bool out_nshc1_present;
+    bool out_nshc1_flow;
+    ovs_be32 out_nshc1;        /* outgoing NSH context c1 */
+
+    bool in_nshc2_present;
+    bool in_nshc2_flow;
+    ovs_be32 in_nshc2;         /* incoming NSH context c2 */
+
+    bool out_nshc2_present;
+    bool out_nshc2_flow;
+    ovs_be32 out_nshc2;        /* outgoing NSH context c2 */
+
+    bool in_nshc3_present;
+    bool in_nshc3_flow;
+    ovs_be32 in_nshc3;         /* incoming NSH context c3 */
+
+    bool out_nshc3_present;
+    bool out_nshc3_flow;
+    ovs_be32 out_nshc3;        /* outgoing NSH context c3 */
+
+    bool in_nshc4_present;
+    bool in_nshc4_flow;
+    ovs_be32 in_nshc4;         /* incoming NSH context c4 */
+
+    bool out_nshc4_present;
+    bool out_nshc4_flow;
+    ovs_be32 out_nshc4;        /* outgoing NSH context c4 */
+
 };
 
 void netdev_run(void);

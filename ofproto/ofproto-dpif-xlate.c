@@ -3431,6 +3431,10 @@ ofpact_needs_recirculation_after_mpls(const struct xlate_ctx *ctx,
     case OFPACT_SET_MPLS_LABEL:
     case OFPACT_SET_NSP:
     case OFPACT_SET_NSI:
+    case OFPACT_SET_NSHC1:
+    case OFPACT_SET_NSHC2:
+    case OFPACT_SET_NSHC3:
+    case OFPACT_SET_NSHC4:
     case OFPACT_NOTE:
     case OFPACT_OUTPUT_REG:
     case OFPACT_EXIT:
@@ -3785,6 +3789,22 @@ do_xlate_actions(const struct ofpact *ofpacts, size_t ofpacts_len,
 
         case OFPACT_SET_NSI:
             flow->tunnel.nsi = ofpact_get_SET_NSI(a)->nsi;
+            break;
+
+        case OFPACT_SET_NSHC1:
+            flow->tunnel.nshc1 = htonl(ofpact_get_SET_NSHC1(a)->nshc1);
+            break;
+
+        case OFPACT_SET_NSHC2:
+            flow->tunnel.nshc2 = htonl(ofpact_get_SET_NSHC2(a)->nshc2);
+            break;
+
+        case OFPACT_SET_NSHC3:
+            flow->tunnel.nshc3 = htonl(ofpact_get_SET_NSHC3(a)->nshc3);
+            break;
+
+        case OFPACT_SET_NSHC4:
+            flow->tunnel.nshc4 = htonl(ofpact_get_SET_NSHC4(a)->nshc4);
             break;
         }
     }

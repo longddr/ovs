@@ -672,26 +672,10 @@ dpif_linux_port_add__(struct dpif_linux *dpif, struct netdev *netdev,
     }
 
     tnl_cfg = netdev_get_tunnel_config(netdev);
-    if (tnl_cfg) {
+    if (tnl_cfg && tnl_cfg->dst_port != 0) {
         ofpbuf_use_stack(&options, options_stub, sizeof options_stub);
-
-        if (tnl_cfg->dst_port != 0) {
-            nl_msg_put_u16(&options, OVS_TUNNEL_ATTR_DST_PORT,
-                           ntohs(tnl_cfg->dst_port));
-        }
-
-        /* doesn't matter if nsh ctx params are zero, send them anyways */
-        nl_msg_put_u32(&options, OVS_TUNNEL_ATTR_NSH_C1,
-                       ntohl(tnl_cfg->nsh_c1));
-
-        nl_msg_put_u32(&options, OVS_TUNNEL_ATTR_NSH_C2,
-                       ntohl(tnl_cfg->nsh_c2));
-
-        nl_msg_put_u32(&options, OVS_TUNNEL_ATTR_NSH_C3,
-                       ntohl(tnl_cfg->nsh_c3));
-
-        nl_msg_put_u32(&options, OVS_TUNNEL_ATTR_NSH_C4,
-                       ntohl(tnl_cfg->nsh_c4));
+        nl_msg_put_u16(&options, OVS_TUNNEL_ATTR_DST_PORT,
+                       ntohs(tnl_cfg->dst_port));
 
         request.options = ofpbuf_data(&options);
         request.options_len = ofpbuf_size(&options);

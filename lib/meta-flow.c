@@ -817,6 +817,54 @@ const struct mf_field mf_fields[MFF_N_IDS] = {
         OFPUTIL_P_NXM_OXM_ANY,
         OFPUTIL_P_NXM_OXM_ANY,
         -1,
+    }, {
+        MFF_NSH_C1, "nshc1", NULL,
+        MF_FIELD_SIZES(be32),
+        MFM_FULLY,
+        MFS_HEXADECIMAL,
+        MFP_NONE,
+        true,
+        NXM_NX_NSH_C1, "NXM_NX_NSH_C1",
+        NXM_NX_NSH_C1, "NXM_NX_NSH_C1", 0,
+        OFPUTIL_P_NXM_OXM_ANY,
+        OFPUTIL_P_NXM_OXM_ANY,
+        -1,
+    }, {
+        MFF_NSH_C2, "nshc2", NULL,
+        MF_FIELD_SIZES(be32),
+        MFM_FULLY,
+        MFS_HEXADECIMAL,
+        MFP_NONE,
+        true,
+        NXM_NX_NSH_C2, "NXM_NX_NSH_C2",
+        NXM_NX_NSH_C2, "NXM_NX_NSH_C2", 0,
+        OFPUTIL_P_NXM_OXM_ANY,
+        OFPUTIL_P_NXM_OXM_ANY,
+        -1,
+    }, {
+        MFF_NSH_C3, "nshc3", NULL,
+        MF_FIELD_SIZES(be32),
+        MFM_FULLY,
+        MFS_HEXADECIMAL,
+        MFP_NONE,
+        true,
+        NXM_NX_NSH_C3, "NXM_NX_NSH_C3",
+        NXM_NX_NSH_C3, "NXM_NX_NSH_C3", 0,
+        OFPUTIL_P_NXM_OXM_ANY,
+        OFPUTIL_P_NXM_OXM_ANY,
+        -1,
+    }, {
+        MFF_NSH_C4, "nshc4", NULL,
+        MF_FIELD_SIZES(be32),
+        MFM_FULLY,
+        MFS_HEXADECIMAL,
+        MFP_NONE,
+        true,
+        NXM_NX_NSH_C4, "NXM_NX_NSH_C4",
+        NXM_NX_NSH_C4, "NXM_NX_NSH_C4", 0,
+        OFPUTIL_P_NXM_OXM_ANY,
+        OFPUTIL_P_NXM_OXM_ANY,
+        -1,
     },
 };
 
@@ -960,6 +1008,14 @@ mf_is_all_wild(const struct mf_field *mf, const struct flow_wildcards *wc)
         return !wc->masks.tunnel.nsp;
     case MFF_NSI:
         return !wc->masks.tunnel.nsi;
+    case MFF_NSH_C1:
+        return !wc->masks.tunnel.nshc1;
+    case MFF_NSH_C2:
+        return !wc->masks.tunnel.nshc2;
+    case MFF_NSH_C3:
+        return !wc->masks.tunnel.nshc3;
+    case MFF_NSH_C4:
+        return !wc->masks.tunnel.nshc4;
     case MFF_METADATA:
         return !wc->masks.metadata;
     case MFF_IN_PORT:
@@ -1238,6 +1294,10 @@ mf_is_value_valid(const struct mf_field *mf, const union mf_value *value)
     case MFF_ND_TLL:
     case MFF_NSP:
     case MFF_NSI:
+    case MFF_NSH_C1:
+    case MFF_NSH_C2:
+    case MFF_NSH_C3:
+    case MFF_NSH_C4:
         return true;
 
     case MFF_IN_PORT_OXM: {
@@ -1485,6 +1545,22 @@ mf_get_value(const struct mf_field *mf, const struct flow *flow,
         value->u8 = flow->tunnel.nsi;
         break;
 
+    case MFF_NSH_C1:
+        value->be32 = flow->tunnel.nshc1;
+        break;
+
+    case MFF_NSH_C2:
+        value->be32 = flow->tunnel.nshc2;
+        break;
+
+    case MFF_NSH_C3:
+        value->be32 = flow->tunnel.nshc3;
+        break;
+
+    case MFF_NSH_C4:
+        value->be32 = flow->tunnel.nshc4;
+        break;
+
     case MFF_N_IDS:
     default:
         OVS_NOT_REACHED();
@@ -1693,6 +1769,22 @@ mf_set_value(const struct mf_field *mf,
 
     case MFF_NSI:
         match_set_nsi(match, value->u8);
+        break;
+
+    case MFF_NSH_C1:
+        match_set_nshc1(match, value->be32);
+        break;
+
+    case MFF_NSH_C2:
+        match_set_nshc2(match, value->be32);
+        break;
+
+    case MFF_NSH_C3:
+        match_set_nshc3(match, value->be32);
+        break;
+
+    case MFF_NSH_C4:
+        match_set_nshc4(match, value->be32);
         break;
 
     case MFF_N_IDS:
@@ -1925,6 +2017,22 @@ mf_set_flow_value(const struct mf_field *mf,
         flow->tunnel.nsi = value->u8;
         break;
 
+    case MFF_NSH_C1:
+        flow->tunnel.nshc1 = value->be32;
+        break;
+
+    case MFF_NSH_C2:
+        flow->tunnel.nshc2 = value->be32;
+        break;
+
+    case MFF_NSH_C3:
+        flow->tunnel.nshc3 = value->be32;
+        break;
+
+    case MFF_NSH_C4:
+        flow->tunnel.nshc4 = value->be32;
+        break;
+
     case MFF_N_IDS:
     default:
         OVS_NOT_REACHED();
@@ -2149,6 +2257,22 @@ mf_set_wild(const struct mf_field *mf, struct match *match)
         match_set_nsi_masked(match, 0, 0);
         break;
 
+    case MFF_NSH_C1:
+        match_set_nshc1_masked(match, htonl(0), htonl(0));
+        break;
+
+    case MFF_NSH_C2:
+        match_set_nshc2_masked(match, htonl(0), htonl(0));
+        break;
+
+    case MFF_NSH_C3:
+        match_set_nshc3_masked(match, htonl(0), htonl(0));
+        break;
+
+    case MFF_NSH_C4:
+        match_set_nshc4_masked(match, htonl(0), htonl(0));
+        break;
+
     case MFF_N_IDS:
     default:
         OVS_NOT_REACHED();
@@ -2327,6 +2451,22 @@ mf_set(const struct mf_field *mf,
 
     case MFF_NSI:
         match_set_nsi_masked(match, value->u8, mask->u8);
+        break;
+
+    case MFF_NSH_C1:
+        match_set_nshc1_masked(match, value->be32, mask->be32);
+        break;
+
+    case MFF_NSH_C2:
+        match_set_nshc2_masked(match, value->be32, mask->be32);
+        break;
+
+    case MFF_NSH_C3:
+        match_set_nshc3_masked(match, value->be32, mask->be32);
+        break;
+
+    case MFF_NSH_C4:
+        match_set_nshc4_masked(match, value->be32, mask->be32);
         break;
 
     case MFF_N_IDS:

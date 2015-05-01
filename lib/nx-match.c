@@ -719,6 +719,11 @@ nx_put_raw(struct ofpbuf *b, enum ofp_version oxm, const struct match *match,
     nxm_put_32m(b, NXM_NX_NSP, flow->tunnel.nsp, match->wc.masks.tunnel.nsp);
     nxm_put_8m(b, NXM_NX_NSI, flow->tunnel.nsi, match->wc.masks.tunnel.nsi);
 
+    nxm_put_32m(b, NXM_NX_NSH_C1, flow->tunnel.nshc1, match->wc.masks.tunnel.nshc1);
+    nxm_put_32m(b, NXM_NX_NSH_C2, flow->tunnel.nshc2, match->wc.masks.tunnel.nshc2);
+    nxm_put_32m(b, NXM_NX_NSH_C3, flow->tunnel.nshc3, match->wc.masks.tunnel.nshc3);
+    nxm_put_32m(b, NXM_NX_NSH_C4, flow->tunnel.nshc4, match->wc.masks.tunnel.nshc4);
+
     /* Other tunnel metadata. */
     nxm_put_32m(b, mf_oxm_header(MFF_TUN_SRC, oxm),
                 flow->tunnel.ip_src, match->wc.masks.tunnel.ip_src);

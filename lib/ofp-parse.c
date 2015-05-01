@@ -638,6 +638,10 @@ parse_named_action(enum ofputil_action_code code,
     struct ofpact_vlan_pcp *vlan_pcp;
     struct ofpact_nsp *nsp;
     struct ofpact_nsi *nsi;
+    struct ofpact_nshc1 *nshc1;
+    struct ofpact_nshc2 *nshc2;
+    struct ofpact_nshc3 *nshc3;
+    struct ofpact_nshc4 *nshc4;
     char *error = NULL;
     uint16_t ethertype = 0;
     uint16_t vid = 0;
@@ -939,6 +943,30 @@ parse_named_action(enum ofputil_action_code code,
         nsi = ofpact_put_SET_NSI(ofpacts);
         nsi->ofpact.compat = code;
         error = str_to_u8(arg, "nsi", &nsi->nsi);
+        break;
+
+    case OFPUTIL_NXAST_SET_NSHC1:
+        nshc1 = ofpact_put_SET_NSHC1(ofpacts);
+        nshc1->ofpact.compat = code;
+        error = str_to_u32(arg, &nshc1->nshc1);
+        break;
+
+    case OFPUTIL_NXAST_SET_NSHC2:
+        nshc2 = ofpact_put_SET_NSHC2(ofpacts);
+        nshc2->ofpact.compat = code;
+        error = str_to_u32(arg, &nshc2->nshc2);
+        break;
+
+    case OFPUTIL_NXAST_SET_NSHC3:
+        nshc3 = ofpact_put_SET_NSHC3(ofpacts);
+        nshc3->ofpact.compat = code;
+        error = str_to_u32(arg, &nshc3->nshc3);
+        break;
+
+    case OFPUTIL_NXAST_SET_NSHC4:
+        nshc4 = ofpact_put_SET_NSHC4(ofpacts);
+        nshc4->ofpact.compat = code;
+        error = str_to_u32(arg, &nshc4->nshc4);
         break;
     }
 

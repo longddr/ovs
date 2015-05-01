@@ -92,6 +92,10 @@
     DEFINE_OFPACT(FIN_TIMEOUT,     ofpact_fin_timeout,   ofpact)    \
     DEFINE_OFPACT(SET_NSP,         ofpact_nsp,           ofpact)    \
     DEFINE_OFPACT(SET_NSI,         ofpact_nsi,           ofpact)    \
+    DEFINE_OFPACT(SET_NSHC1,       ofpact_nshc1,         ofpact)    \
+    DEFINE_OFPACT(SET_NSHC2,       ofpact_nshc2,         ofpact)    \
+    DEFINE_OFPACT(SET_NSHC3,       ofpact_nshc3,         ofpact)    \
+    DEFINE_OFPACT(SET_NSHC4,       ofpact_nshc4,         ofpact)    \
                                                                     \
     /* Flow table interaction. */                                   \
     DEFINE_OFPACT(RESUBMIT,        ofpact_resubmit,      ofpact)    \
@@ -430,6 +434,38 @@ struct ofpact_nsp {
 struct ofpact_nsi {
     struct ofpact ofpact;
     uint8_t nsi;
+};
+
+/* OFPACT_SET_NSHC1.
+ *
+ * Used for NXAST_SET_NSHC1. */
+struct ofpact_nshc1 {
+    struct ofpact ofpact;
+    uint32_t nshc1;
+};
+
+/* OFPACT_SET_NSHC2.
+ *
+ * Used for NXAST_SET_NSHC2. */
+struct ofpact_nshc2 {
+    struct ofpact ofpact;
+    uint32_t nshc2;
+};
+
+/* OFPACT_SET_NSHC3.
+ *
+ * Used for NXAST_SET_NSHC3. */
+struct ofpact_nshc3 {
+    struct ofpact ofpact;
+    uint32_t nshc3;
+};
+
+/* OFPACT_SET_NSHC4.
+ *
+ * Used for NXAST_SET_NSHC4. */
+struct ofpact_nshc4 {
+    struct ofpact ofpact;
+    uint32_t nshc4;
 };
 
 /* OFPACT_WRITE_METADATA.

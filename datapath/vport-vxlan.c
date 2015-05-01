@@ -49,7 +49,6 @@
  */
 struct vxlan_port {
 	struct vxlan_sock *vs;
-	struct nsh_ctx nsh_ctx;
 	char name[IFNAMSIZ];
 };
 
@@ -60,7 +59,8 @@ static inline struct vxlan_port *vxlan_vport(const struct vport *vport)
 
 /* Called with rcu_read_lock and BH disabled. */
 static void vxlan_rcv(struct vxlan_sock *vs, struct sk_buff *skb,
-		      __be32 vx_vni, __be32 nsp)
+		      __be32 vx_vni, __be32 nsp, __be32 nshc1, __be32 nshc2,
+		      __be32 nshc3, __be32 nshc4)
 {
 	struct ovs_tunnel_info tun_info;
 	struct vport *vport = vs->data;
@@ -70,8 +70,9 @@ static void vxlan_rcv(struct vxlan_sock *vs, struct sk_buff *skb,
 	/* Save outer tunnel values */
 	iph = ip_hdr(skb);
 	key = cpu_to_be64(ntohl(vx_vni) >> 8);
-	ovs_flow_tun_info_init(&tun_info, iph, key, nsp,
-			       TUNNEL_KEY | TUNNEL_NSP | TUNNEL_NSI, NULL, 0);
+	ovs_flow_tun_info_init(&tun_info, iph, key, nsp, nshc1, nshc2,
+        nshc3, nshc4, TUNNEL_KEY | TUNNEL_NSP | TUNNEL_NSI | TUNNEL_NSHC,
+        NULL, 0);
 
 	ovs_vport_receive(vport, skb, &tun_info);
 }
@@ -80,21 +81,8 @@ static int vxlan_get_options(const struct vport *vport, struct sk_buff *skb)
 {
 	struct vxlan_port *vxlan_port = vxlan_vport(vport);
 	__be16 dst_port = inet_sport(vxlan_port->vs->sock->sk);
-	struct nsh_ctx *n = &vxlan_port->nsh_ctx;
 
 	if (nla_put_u16(skb, OVS_TUNNEL_ATTR_DST_PORT, ntohs(dst_port))) 
-		return -EMSGSIZE;
-
-	if (nla_put_u32(skb, OVS_TUNNEL_ATTR_NSH_C1, ntohl(n->c1)))
-		return -EMSGSIZE;
-
-	if (nla_put_u32(skb, OVS_TUNNEL_ATTR_NSH_C2, ntohl(n->c2)))
-		return -EMSGSIZE;
-
-	if (nla_put_u32(skb, OVS_TUNNEL_ATTR_NSH_C3, ntohl(n->c3)))
-		return -EMSGSIZE;
-
-	if (nla_put_u32(skb, OVS_TUNNEL_ATTR_NSH_C4, ntohl(n->c4)))
 		return -EMSGSIZE;
 
 	return 0;
@@ -148,28 +136,6 @@ static struct vport *vxlan_tnl_create(const struct vport_parms *parms)
 	}
 	vxlan_port->vs = vs;
 
-	memset(&vxlan_port->nsh_ctx, 0x00, sizeof(vxlan_port->nsh_ctx));
-
-	a = nla_find_nested(options, OVS_TUNNEL_ATTR_NSH_C1);
-	if (a && nla_len(a) == sizeof(u32)) {
-		vxlan_port->nsh_ctx.c1 = htonl(nla_get_u32(a));
-	}
-
-	a = nla_find_nested(options, OVS_TUNNEL_ATTR_NSH_C2);
-	if (a && nla_len(a) == sizeof(u32)) {
-		vxlan_port->nsh_ctx.c2 = htonl(nla_get_u32(a));
-	}
-
-	a = nla_find_nested(options, OVS_TUNNEL_ATTR_NSH_C3);
-	if (a && nla_len(a) == sizeof(u32)) {
-		vxlan_port->nsh_ctx.c3 = htonl(nla_get_u32(a));
-	}
-
-	a = nla_find_nested(options, OVS_TUNNEL_ATTR_NSH_C4);
-	if (a && nla_len(a) == sizeof(u32)) {
-		vxlan_port->nsh_ctx.c4 = htonl(nla_get_u32(a));
-	}
-
 	return vport;
 
 error:
@@ -211,13 +177,17 @@ static int vxlan_tnl_send(struct vport *vport, struct sk_buff *skb)
 
 	src_port = udp_flow_src_port(net, skb, 0, 0, true);
 
-        err = vxlan_xmit_skb(vxlan_port->vs, rt, skb, &vxlan_port->nsh_ctx,
+        err = vxlan_xmit_skb(vxlan_port->vs, rt, skb,
                              saddr, tun_key->ipv4_dst,
                              tun_key->ipv4_tos,
                              tun_key->ipv4_ttl, df,
                              src_port, dst_port,
                              htonl(be64_to_cpu(tun_key->tun_id) << 8),
-                             OVS_CB(skb)->tun_info->tunnel.nsp);
+                             OVS_CB(skb)->tun_info->tunnel.nsp,
+                             OVS_CB(skb)->tun_info->tunnel.nshc1,
+                             OVS_CB(skb)->tun_info->tunnel.nshc2,
+                             OVS_CB(skb)->tun_info->tunnel.nshc3,
+                             OVS_CB(skb)->tun_info->tunnel.nshc4);
 
 
 	if (err < 0)

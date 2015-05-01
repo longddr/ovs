@@ -272,10 +272,6 @@ enum ovs_vport_attr {
 enum {
 	OVS_TUNNEL_ATTR_UNSPEC,
 	OVS_TUNNEL_ATTR_DST_PORT, /* 16-bit UDP port, used by L4 tunnels. */
-	OVS_TUNNEL_ATTR_NSH_C1,  /* 32-bit NSH Context C1 */
-	OVS_TUNNEL_ATTR_NSH_C2,  /* 32-bit NSH Context C2 */
-	OVS_TUNNEL_ATTR_NSH_C3,  /* 32-bit NSH Context C3 */
-	OVS_TUNNEL_ATTR_NSH_C4,  /* 32-bit NSH Context C4 */
 	__OVS_TUNNEL_ATTR_MAX
 };
 
@@ -353,6 +349,10 @@ enum ovs_tunnel_key_attr {
 	OVS_TUNNEL_KEY_ATTR_OAM,		/* No argument, OAM frame. */
 	OVS_TUNNEL_KEY_ATTR_NSP,		/* be32 NSH svc path (lower 24 bits) */
 	OVS_TUNNEL_KEY_ATTR_NSI,		/* u8 NSH service index */
+	OVS_TUNNEL_KEY_ATTR_NSH_C1,		/* be32 NSH Context */
+	OVS_TUNNEL_KEY_ATTR_NSH_C2,		/* be32 NSH Context */
+	OVS_TUNNEL_KEY_ATTR_NSH_C3,		/* be32 NSH Context */
+	OVS_TUNNEL_KEY_ATTR_NSH_C4,		/* be32 NSH Context */
 	OVS_TUNNEL_KEY_ATTR_GENEVE_OPTS,	/* Array of Geneve options */
 	__OVS_TUNNEL_KEY_ATTR_MAX
 };

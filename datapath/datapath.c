@@ -395,6 +395,10 @@ static size_t key_attr_size(void)
 		  + nla_total_size(256) /* OVS_TUNNEL_KEY_ATTR_GENEVE_OPTS */
 		  + nla_total_size(4)   /* OVS_TUNNEL_KEY_ATTR_NSP */
 		  + nla_total_size(1)   /* OVS_TUNNEL_KEY_ATTR_NSI */
+		  + nla_total_size(4)   /* OVS_TUNNEL_KEY_ATTR_NC1 */
+		  + nla_total_size(4)   /* OVS_TUNNEL_KEY_ATTR_NC2 */
+		  + nla_total_size(4)   /* OVS_TUNNEL_KEY_ATTR_NC3 */
+		  + nla_total_size(4)   /* OVS_TUNNEL_KEY_ATTR_NC4 */
 		+ nla_total_size(4)   /* OVS_KEY_ATTR_IN_PORT */
 		+ nla_total_size(4)   /* OVS_KEY_ATTR_SKB_MARK */
 		+ nla_total_size(4)   /* OVS_KEY_ATTR_DP_HASH */

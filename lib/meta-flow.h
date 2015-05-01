@@ -146,6 +146,10 @@ enum OVS_PACKED_ENUM mf_field_id {
     /* Network Service Headers (NSH) Fields */
     MFF_NSP,                    /* be32 */
     MFF_NSI,                    /* u8 */
+    MFF_NSH_C1,                 /* be32 */
+    MFF_NSH_C2,                 /* be32 */
+    MFF_NSH_C3,                 /* be32 */
+    MFF_NSH_C4,                 /* be32 */
 
     MFF_N_IDS
 };

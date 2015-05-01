@@ -48,6 +48,10 @@ struct sk_buff;
 struct ovs_key_ipv4_tunnel {
 	__be64 tun_id;
 	__be32 nsp;      /* it contains (nsp - 24 bits | nsi - 8 bits) here */
+	__be32 nshc1;    /* NSH context headers */
+	__be32 nshc2;
+	__be32 nshc3;
+	__be32 nshc4;
 	__be32 ipv4_src;
 	__be32 ipv4_dst;
 	__be16 tun_flags;
@@ -72,12 +76,18 @@ struct ovs_tunnel_info {
 
 static inline void ovs_flow_tun_info_init(struct ovs_tunnel_info *tun_info,
 					 const struct iphdr *iph, __be64 tun_id,
-					 __be32 nsp, __be16 tun_flags,
+					 __be32 nsp, __be32 nshc1, __be32 nshc2,
+                     __be32 nshc3, __be32 nshc4, 
+                     __be16 tun_flags,
 					 struct geneve_opt *opts,
 					 u8 opts_len)
 {
 	tun_info->tunnel.tun_id = tun_id;
 	tun_info->tunnel.nsp = nsp;
+	tun_info->tunnel.nshc1 = nshc1;
+	tun_info->tunnel.nshc2 = nshc2;
+	tun_info->tunnel.nshc3 = nshc3;
+	tun_info->tunnel.nshc4 = nshc4;
 	tun_info->tunnel.ipv4_src = iph->saddr;
 	tun_info->tunnel.ipv4_dst = iph->daddr;
 	tun_info->tunnel.ipv4_tos = iph->tos;

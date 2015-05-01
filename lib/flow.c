@@ -702,6 +702,14 @@ flow_tun_flag_to_string(uint32_t flags)
         return "nsp";
     case FLOW_TNL_F_NSI:
         return "nsi";
+    case FLOW_TNL_F_NSH_C1:
+        return "nshc1";
+    case FLOW_TNL_F_NSH_C2:
+        return "nshc2";
+    case FLOW_TNL_F_NSH_C3:
+        return "nshc3";
+    case FLOW_TNL_F_NSH_C4:
+        return "nshc4";
     default:
         return NULL;
     }

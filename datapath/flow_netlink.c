@@ -348,6 +348,10 @@ static int ipv4_tun_from_nlattr(const struct nlattr *attr,
 	bool ttl = false;
 	__be16 tun_flags = 0;
 	__be32 nsp = 0;
+	__be32 nshc1 = 0;
+	__be32 nshc2 = 0;
+	__be32 nshc3 = 0;
+	__be32 nshc4 = 0;
 
 	nla_for_each_nested(a, attr, rem) {
 		int type = nla_type(a);
@@ -362,6 +366,10 @@ static int ipv4_tun_from_nlattr(const struct nlattr *attr,
 			[OVS_TUNNEL_KEY_ATTR_OAM] = 0,
 			[OVS_TUNNEL_KEY_ATTR_NSP] = sizeof(u32),
 			[OVS_TUNNEL_KEY_ATTR_NSI] = 1,
+			[OVS_TUNNEL_KEY_ATTR_NSH_C1] = sizeof(u32),
+			[OVS_TUNNEL_KEY_ATTR_NSH_C2] = sizeof(u32),
+			[OVS_TUNNEL_KEY_ATTR_NSH_C3] = sizeof(u32),
+			[OVS_TUNNEL_KEY_ATTR_NSH_C4] = sizeof(u32),
 			[OVS_TUNNEL_KEY_ATTR_GENEVE_OPTS] = -1,
 		};
 
@@ -418,6 +426,22 @@ static int ipv4_tun_from_nlattr(const struct nlattr *attr,
 		case OVS_TUNNEL_KEY_ATTR_NSI:
 			nsp |= htonl(nla_get_u8(a));
 			tun_flags |= TUNNEL_NSI;
+			break;
+		case OVS_TUNNEL_KEY_ATTR_NSH_C1:
+			nshc1 = nla_get_be32(a);
+			tun_flags |= TUNNEL_NSHC;
+			break;
+		case OVS_TUNNEL_KEY_ATTR_NSH_C2:
+			nshc2 = nla_get_be32(a);
+			tun_flags |= TUNNEL_NSHC;
+			break;
+		case OVS_TUNNEL_KEY_ATTR_NSH_C3:
+			nshc3 = nla_get_be32(a);
+			tun_flags |= TUNNEL_NSHC;
+			break;
+		case OVS_TUNNEL_KEY_ATTR_NSH_C4:
+			nshc4 = nla_get_be32(a);
+			tun_flags |= TUNNEL_NSHC;
 			break;
 		case OVS_TUNNEL_KEY_ATTR_GENEVE_OPTS:
 			if (nla_len(a) > sizeof(match->key->tun_opts)) {
@@ -476,6 +500,10 @@ static int ipv4_tun_from_nlattr(const struct nlattr *attr,
 	}
 
 	SW_FLOW_KEY_PUT(match, tun_key.nsp, nsp, is_mask);
+	SW_FLOW_KEY_PUT(match, tun_key.nshc1, nshc1, is_mask);
+	SW_FLOW_KEY_PUT(match, tun_key.nshc2, nshc2, is_mask);
+	SW_FLOW_KEY_PUT(match, tun_key.nshc3, nshc3, is_mask);
+	SW_FLOW_KEY_PUT(match, tun_key.nshc4, nshc4, is_mask);
 	SW_FLOW_KEY_PUT(match, tun_key.tun_flags, tun_flags, is_mask);
 
 	if (rem > 0) {
@@ -539,6 +567,18 @@ static int ipv4_tun_to_nlattr(struct sk_buff *skb,
 		return -EMSGSIZE;
 	if (output->tun_flags & TUNNEL_NSI &&
 	    nla_put_u8(skb, OVS_TUNNEL_KEY_ATTR_NSI, nsi))
+		return -EMSGSIZE;
+	if (output->tun_flags & TUNNEL_NSHC &&
+	    nla_put_be32(skb, OVS_TUNNEL_KEY_ATTR_NSH_C1, output->nshc1))
+		return -EMSGSIZE;
+	if (output->tun_flags & TUNNEL_NSHC &&
+	    nla_put_be32(skb, OVS_TUNNEL_KEY_ATTR_NSH_C2, output->nshc2))
+		return -EMSGSIZE;
+	if (output->tun_flags & TUNNEL_NSHC &&
+	    nla_put_be32(skb, OVS_TUNNEL_KEY_ATTR_NSH_C3, output->nshc3))
+		return -EMSGSIZE;
+	if (output->tun_flags & TUNNEL_NSHC &&
+	    nla_put_be32(skb, OVS_TUNNEL_KEY_ATTR_NSH_C4, output->nshc4))
 		return -EMSGSIZE;
 	if (tun_opts &&
 	    nla_put(skb, OVS_TUNNEL_KEY_ATTR_GENEVE_OPTS,

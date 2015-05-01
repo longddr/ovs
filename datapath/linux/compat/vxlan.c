@@ -91,6 +91,10 @@ static int vxlan_udp_encap_recv(struct sock *sk, struct sk_buff *skb)
 	struct udphdr *udp;
 	bool isnsh = false;
 	__be32 nsp = 0;
+	__be32 c1 = 0;
+	__be32 c2 = 0;
+	__be32 c3 = 0;
+	__be32 c4 = 0;
 
 	udp = (struct udphdr *)udp_hdr(skb);
 	if (udp->dest == htons(NSH_DST_PORT))
@@ -119,6 +123,10 @@ static int vxlan_udp_encap_recv(struct sock *sk, struct sk_buff *skb)
 		}
 
 		nsp = nsh->b.b2; /* same as svc_path | htonl(svc_idx) */
+        c1 = nsh->c.c1;  /* NSH Contexts */
+        c2 = nsh->c.c2;
+        c3 = nsh->c.c3;
+        c4 = nsh->c.c4;
 	}
 
 	if (iptunnel_pull_header(skb, isnsh ? NSH_HLEN : VXLAN_HLEN,
@@ -129,7 +137,7 @@ static int vxlan_udp_encap_recv(struct sock *sk, struct sk_buff *skb)
 	if (!vs)
 		goto drop;
 
-	vs->rcv(vs, skb, vxh->vx_vni, nsp);
+	vs->rcv(vs, skb, vxh->vx_vni, nsp, c1, c2, c3, c3);
 	return 0;
 
 drop:
@@ -211,9 +219,10 @@ static int handle_offloads(struct sk_buff *skb)
 }
 
 int vxlan_xmit_skb(struct vxlan_sock *vs,
-		   struct rtable *rt, struct sk_buff *skb, struct nsh_ctx *nc,
+		   struct rtable *rt, struct sk_buff *skb,
 		   __be32 src, __be32 dst, __u8 tos, __u8 ttl, __be16 df,
-		   __be16 src_port, __be16 dst_port, __be32 vni, __be32 nsp)
+		   __be16 src_port, __be16 dst_port, __be32 vni, __be32 nsp,
+		   __be16 nshc1, __be16 nshc2, __be32 nshc3, __be32 nshc4)
 {
 	bool isnsh = (dst_port == htons(NSH_DST_PORT));
 	struct vxlanhdr *vxh;
@@ -252,7 +261,10 @@ int vxlan_xmit_skb(struct vxlan_sock *vs,
 		/* b2 should precede svc_idx, else svc_idx will be zero */
 		nsh->b.b2 = nsp & htonl(NSH_M_NSP);
 		nsh->b.svc_idx = nsi ? nsi : 0x01;
-		memcpy(&nsh->c, nc, sizeof nsh->c);
+		nsh->c.c1 = nshc1;
+		nsh->c.c2 = nshc2;
+		nsh->c.c3 = nshc3;
+		nsh->c.c4 = nshc4;
 	}
 
 	vxh = (struct vxlanhdr *) __skb_push(skb, sizeof(*vxh));
