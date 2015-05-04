@@ -33,13 +33,13 @@
  */
 struct nsh_base {
 #if defined(__LITTLE_ENDIAN_BITFIELD)
-	__u8	len:6;
-	__u8	res2:2;
-
 	__u8	res1:4;
 	__u8	c:1;
 	__u8	o:1;
 	__u8	ver:2;
+
+	__u8	len:6;
+	__u8	res2:2;
 #elif defined(__BIG_ENDIAN_BITFIELD)
 	__u8	ver:2;
 	__u8	o:1;
