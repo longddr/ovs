@@ -222,7 +222,7 @@ int vxlan_xmit_skb(struct vxlan_sock *vs,
 		   struct rtable *rt, struct sk_buff *skb,
 		   __be32 src, __be32 dst, __u8 tos, __u8 ttl, __be16 df,
 		   __be16 src_port, __be16 dst_port, __be32 vni, __be32 nsp,
-		   __be16 nshc1, __be16 nshc2, __be32 nshc3, __be32 nshc4)
+		   __be32 nshc1, __be32 nshc2, __be32 nshc3, __be32 nshc4)
 {
 	bool isnsh = (dst_port == htons(NSH_DST_PORT));
 	struct vxlanhdr *vxh;
