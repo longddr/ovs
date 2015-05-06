@@ -1,5 +1,26 @@
 #!/bin/bash
 
+OPTIND=1
+nodownload=0
+verbose=0
+
+while getopts "h?v?n" opt; do
+    case "$opt" in
+    h|\?)
+        echo "Please read the script ;)"
+        exit 0
+        ;;  
+    v)  verbose=1
+        ;;  
+    n)  nodownload=1
+        ;;  
+    esac
+done
+
+shift $((OPTIND-1))
+
+[ "$1" = "--" ] && shift
+
 LOG_FILE=ovs-$$.out
 ERR_FILE=ovs-$$.err
 
@@ -40,11 +61,13 @@ echos () {
     printf "\r%s\n" "$@" >&3
 }
 
-echos "Starting to install Openvswitch with support for NSH"
-git clone https://github.com/priteshk/ovs.git
-if [ $? -gt 0 ]; then
-    endspin "ERROR:Cloning git repo failed."
-    exit 1
+if [ "$nodownload" == "0" ]; then
+    echos "Starting to install Openvswitch with support for NSH"
+    git clone https://github.com/priteshk/ovs.git
+    if [ $? -gt 0 ]; then
+        endspin "ERROR:Cloning git repo failed."
+        exit 1
+    fi
 fi
 
 spin
@@ -82,6 +105,12 @@ spin
 sudo rmmod libcrc32c
 spin
 sudo rmmod openvswitch
+spin
+sudo dpkg --force-all --purge openvswitch-switch
+spin
+sudo dpkg --force-all --purge openvswitch-common
+spin
+sudo dpkg --force-all --purge openvswitch-datapath-dkms
 spin
 sudo rm /tmp/ovsdb.txt
 spin
