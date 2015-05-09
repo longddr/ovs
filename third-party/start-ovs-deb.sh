@@ -130,6 +130,12 @@ spin
 sudo rm /tmp/vswitch.txt
 spin
 touch /tmp/vswitch.txt
+spin
+./boot.sh
+spin
+./configure --with-linux=/lib/modules/`uname -r`/build
+spin
+sudo make uninstall
 
 spin
 sudo apt-get install -y build-essential
