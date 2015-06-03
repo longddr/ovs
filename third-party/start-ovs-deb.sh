@@ -136,6 +136,8 @@ spin
 ./configure --with-linux=/lib/modules/`uname -r`/build
 spin
 sudo make uninstall
+spin
+git clean -x -d -f
 
 spin
 sudo apt-get install -y build-essential
@@ -212,7 +214,7 @@ spin
 sudo lsmod | grep -i open
 
 spin
-sudo ovs-vsctl add-br br1
+sudo update-rc.d openvswitch-switch defaults
 spin
 sudo ovs-vsctl show >&3
 spin
